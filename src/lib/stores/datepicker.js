@@ -12,7 +12,18 @@ const pipe = (...fns) => (val) => fns.reduce((accum, fn) => fn(accum), val);
 
 const zeroDay = (date) => dayjs(date).startOf('day').toDate();
 
-const get = ({ selected, start, end, startOfWeekIndex = 0, shouldEnlargeDay = false }) => {
+const get = ({
+	selected,
+	start,
+	end,
+	startOfWeekIndex = 0,
+	shouldEnlargeDay = false,
+	year = new Date().getFullYear(),
+	month = new Date().getMonth(),
+	day = new Date().getDate(),
+	disableWeekends = true,
+	disabledDates = []
+}) => {
 	const { subscribe, set, update } = writable({
 		open: false,
 		hasChosen: false,
@@ -21,12 +32,14 @@ const get = ({ selected, start, end, startOfWeekIndex = 0, shouldEnlargeDay = fa
 		end: zeroDay(end),
 		shouldEnlargeDay,
 		enlargeDay: false,
-		year: selected.getFullYear(),
-		month: selected.getMonth(),
-		day: selected.getDate(),
+		year,
+		month,
+		day,
 		activeView: 'days',
 		activeViewDirection: 1,
-		startOfWeekIndex
+		startOfWeekIndex,
+		disableWeekends,
+		disabledDates
 	});
 
 	return {
@@ -39,9 +52,11 @@ const get = ({ selected, start, end, startOfWeekIndex = 0, shouldEnlargeDay = fa
 			update((state) => ({ ...state, enlargeDay }));
 		},
 		getSelectableVector(date) {
-			const { start, end } = this.getState();
+			const { start, end, disableWeekends, disabledDates } = this.getState();
 			if (date < start) return -1;
 			if (date > end) return 1;
+			if (disableWeekends && (date.getDay() === 0 || date.getDay() === 6)) return 1;
+			if (disabledDates.includes(date.toDateString())) return -1;
 			return 0;
 		},
 		isSelectable(date, clamping = []) {

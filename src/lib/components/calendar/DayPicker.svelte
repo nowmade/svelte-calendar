@@ -61,7 +61,7 @@
 	};
 
 	$: totalMonths = calPagesBetweenDates($store.start, $store.end);
-	$: monthIndex = calPagesBetweenDates($store.start, $store.selected) - 1;
+	$: monthIndex = calPagesBetweenDates($store.start, $store.selected || new Date()) - 1;
 	$: initialY = monthIndex * scrollStep;
 </script>
 
